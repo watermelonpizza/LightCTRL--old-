@@ -4,12 +4,12 @@ namespace LifxLib.Messages
 {
     public class LifxSetLabelCommand : LifxCommand
     {
-        private const UInt16 PACKET_TYPE = 0x18;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.SetLabel;
         private string mLabelName = "";
 
        
         public LifxSetLabelCommand(string newLabelName)
-            : base(PACKET_TYPE, new LifxLabelMessage())
+            : base(PACKET_TYPE)
         {
             mLabelName = newLabelName;    
         }

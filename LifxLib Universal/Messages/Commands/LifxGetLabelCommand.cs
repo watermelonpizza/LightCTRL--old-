@@ -4,10 +4,10 @@ namespace LifxLib.Messages
 {
     public class LifxGetLabelCommand : LifxCommand
     {
-        private const UInt16 PACKET_TYPE = 0x17;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.GetLabel;
 
         public LifxGetLabelCommand()
-            : base(PACKET_TYPE, new LifxLabelMessage())
+            : base(PACKET_TYPE)
         {
             
         }

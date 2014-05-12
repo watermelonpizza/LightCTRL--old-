@@ -1,5 +1,6 @@
 ﻿using LightCTRL.Common;
 using LifxLib;
+using LifxLib.Messages;
 
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Windows.Storage.Streams;
+using Windows.Networking;
+using Windows.Networking.Sockets;
 
 // The Universal Hub Application project template is documented at http://go.microsoft.com/fwlink/?LinkID=391955
 
@@ -29,10 +33,12 @@ namespace LightCTRL
     /// A page that displays a grouped collection of items.
     /// </summary>
     public sealed partial class HubPage : Page
-    {
+    {        
         private readonly NavigationHelper navigationHelper;
         private readonly ObservableDictionary defaultViewModel = new ObservableDictionary();
         private readonly ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView("Resources");
+        private LifxBulb bulb;
+        private delegate void DSetTextBox(string text);
 
         public HubPage()
         {
@@ -46,6 +52,39 @@ namespace LightCTRL
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
             this.navigationHelper.SaveState += this.NavigationHelper_SaveState;
+
+            Initialise();
+        }
+
+        private void Initialise()
+        {
+            LifxCommunicator.Instance.MessageRecieved += Instance_MessageRecieved;
+            LifxCommunicator.Instance.PanControllerFound += Instance_PanControllerFound;
+        }
+
+        private async void Instance_PanControllerFound(object sender, LifxPanController e)
+        {
+            bulb = e.Bulbs[0];
+        }
+
+        private async void Instance_MessageRecieved(object sender, LifxMessage e)
+        {
+            if (e.PacketType == MessagePacketType.PowerState)
+            {
+                if (((LifxPowerStateMessage)e).PowerState == LifxPowerState.On)
+                {
+                    bulb.SendGetLightStatusCommand();
+                }
+            }
+            else if (e.PacketType == MessagePacketType.LightStatus)
+            {
+                await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    LifxLightStatusMessage message = (LifxLightStatusMessage)e;
+                    PacketInfo.Text = message.Hue.ToString() + "\n\r" + message.Saturation.ToString();
+                });
+            }
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -139,5 +178,18 @@ namespace LightCTRL
         }
 
         #endregion
+
+        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (((ToggleSwitch)sender).IsOn)
+                bulb.SendSetPowerStateCommand(LifxPowerState.On);
+            else
+                bulb.SendSetPowerStateCommand(LifxPowerState.Off);
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            await LifxCommunicator.Instance.Discover();
+        }
     }
 }

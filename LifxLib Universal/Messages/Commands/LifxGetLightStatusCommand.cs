@@ -2,12 +2,12 @@
 
 namespace LifxLib.Messages
 {
-    public class LifxGetLightStatusCommand : LifxCommand
+    public class LifxGetLightStateCommand : LifxCommand
     {
-        private const UInt16 PACKET_TYPE = 0x65;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.GetLightState;
 
-        public LifxGetLightStatusCommand()
-            : base(PACKET_TYPE, new LifxLightStatusMessage())
+        public LifxGetLightStateCommand()
+            : base(PACKET_TYPE)
         {
 
         }

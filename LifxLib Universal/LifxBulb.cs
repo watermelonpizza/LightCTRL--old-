@@ -1,32 +1,32 @@
 ﻿using System;
 using Windows.Networking;
+using Windows.Networking.Sockets;
 using LifxLib.Messages;
 
 namespace LifxLib
 {
     public class LifxBulb
     {
-        private string mMacAddress = "";
-        private LifxPanController mPanController;
+        public string IPAddress { get; set; }
+        public string MACAddress { get; set; }
+        public LifxPanController PanController { get; set; }
 
-        public LifxBulb(LifxPanController panController, string macAddress)
+        public LifxBulb(LifxPanController panController, string ipAddress, string macAddress)
         {
-            mPanController = panController;
-            mMacAddress = macAddress;
+            PanController = panController;
+            IPAddress = ipAddress;
+            MACAddress = macAddress;
         }
 
         /// <summary>
         /// Get current power state
         /// </summary>
         /// <returns></returns>
-        public LifxPowerState GetPowerState()
+        public async void SendGetPowerStateCommand()
         {
             LifxGetPowerStateCommand command = new LifxGetPowerStateCommand();
 
-            LifxCommunicator.Instance.SendCommand(command, this);
-            LifxPowerStateMessage returnMessage = (LifxPowerStateMessage)command.ReturnMessage;
-
-            return returnMessage.PowerState;
+            await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
         /// <summary>
@@ -34,101 +34,50 @@ namespace LifxLib
         /// </summary>
         /// <param name="stateToSet"></param>
         /// <returns>Returns the set power state</returns>
-        public LifxPowerState SetPowerState(LifxPowerState stateToSet)
+        public async void SendSetPowerStateCommand(LifxPowerState stateToSet)
         {
             LifxSetPowerStateCommand command = new LifxSetPowerStateCommand(stateToSet);
-
-            LifxCommunicator.Instance.SendCommand(command, this);
-
-            LifxPowerStateMessage returnMessage = (LifxPowerStateMessage)command.ReturnMessage;
-
-            return returnMessage.PowerState;
+            await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
-        public string GetLabel()
+        public async void SendGetLabelCommand()
         {
-
             LifxGetLabelCommand command = new LifxGetLabelCommand();
-            LifxCommunicator.Instance.SendCommand(command, this);
-
-            return ((LifxLabelMessage)command.ReturnMessage).BulbLabel;
+            await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
 
-        public string SetLabel(string newLabel)
+        public async void SendSetLabelCommand(string newLabel)
         {
             LifxSetLabelCommand command = new LifxSetLabelCommand(newLabel);
-
-            LifxCommunicator.Instance.SendCommand(command, this);
-
-            return ((LifxLabelMessage)command.ReturnMessage).BulbLabel;
+            await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
-        public LifxLightStatus GetLightStatus()
+        public async void SendGetLightStatusCommand()
         {
 
-            LifxGetLightStatusCommand command = new LifxGetLightStatusCommand();
-
-            LifxCommunicator.Instance.SendCommand(command, this);
-
-            LifxLightStatusMessage lsMessage = (LifxLightStatusMessage)command.ReturnMessage;
+            LifxGetLightStateCommand command = new LifxGetLightStateCommand();
+            await LifxCommunicator.Instance.SendCommand(command, this);
 
             //HSLColor hslColor = new HSLColor((double)(lsMessage.Hue * 240 / 65535), (double)(lsMessage.Saturation * 240 / 65535), (double)(lsMessage.Lumnosity * 240 / 65535));
-
-            LifxColor color = new LifxColor(lsMessage.Hue, lsMessage.Saturation, lsMessage.Lumnosity, lsMessage.Kelvin);
-
-            LifxLightStatus lightsStatus = new LifxLightStatus(color, lsMessage.PowerState, lsMessage.Dim, lsMessage.Label, lsMessage.Tags);
-
-            return lightsStatus;
-                
         }
 
 
-        public void SetColor(LifxColor color, UInt32 fadeTime)
+        public async void SendSetColorCommand(LifxColor color, UInt32 fadeTime)
         {
 
-            LifxSetLightStateCommand command = new LifxSetLightStateCommand(color.Hue, color.Saturation, color.Lumnosity, color.Kelvin, fadeTime);
-
-            LifxCommunicator.Instance.SendCommand(command, this);
+            LifxSetLightStateCommand command = new LifxSetLightStateCommand(color.Hue, color.Saturation, color.Luminosity, color.Kelvin, fadeTime);
+            await LifxCommunicator.Instance.SendCommand(command, this);
         
         }
 
 
-        public void SetDimLevel(UInt16 dimLevel, UInt32 fadeTime)
+        public async void SendSetDimLevelCommand(UInt16 dimLevel, UInt32 fadeTime)
         {
 
             LifxSetDimAbsoluteCommand command = new LifxSetDimAbsoluteCommand(dimLevel, fadeTime);
-
-            LifxCommunicator.Instance.SendCommand(command, this);
+            await LifxCommunicator.Instance.SendCommand(command, this);
 
         }
-
-
-        #region ILifxNode Members
-
-        public string PanHandler
-        {
-            get { return mPanController.MacAddress; }
-        }
-
-        public string MacAddress
-        {
-            get { return mMacAddress; }
-            set { mMacAddress = value; }
-        }
-
-        public HostName HostName
-        {
-            get
-            {
-                return mPanController.HostName;
-            }
-            set
-            {
-                mPanController.HostName = value;
-            }
-        }
-
-        #endregion
     }
 }

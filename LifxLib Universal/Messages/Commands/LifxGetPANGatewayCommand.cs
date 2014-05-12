@@ -2,12 +2,12 @@
 
 namespace LifxLib.Messages
 {
-    public class LifxGetPANGatewayCommand : LifxCommand
+    public class LifxGetPanGatewayCommand : LifxCommand
     {
-        private const UInt16 PACKET_TYPE = 0x02;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.GetPanGateway;
         
-        public LifxGetPANGatewayCommand()
-            : base(PACKET_TYPE, new LifxPANGatewayStateMessage())
+        public LifxGetPanGatewayCommand()
+            : base(PACKET_TYPE)
         {
             base.IsBroadcastCommand = true;
             base.IsDiscoveryCommand = true;

@@ -2,12 +2,12 @@
 
 namespace LifxLib.Messages
 {
-    public class LifxPowerStateMessage : LifxReceivedMessage
+    public class LifxPowerStateMessage : LifxMessage
     {
-        private const UInt16 PACKET_TYPE = 0x16;
+        private const MessagePacketType PACKET_TYPE = MessagePacketType.PowerState;
 
-        public LifxPowerStateMessage()
-            : base(PACKET_TYPE)
+        public LifxPowerStateMessage(LifxDataPacket packet)
+            : base(packet, PACKET_TYPE)
         {
 
         }

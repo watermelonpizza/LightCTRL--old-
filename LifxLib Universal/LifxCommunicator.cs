@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.Networking;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
@@ -11,9 +12,6 @@ namespace LifxLib
 {
     public class LifxCommunicator : IDisposable
     {
-        private const Int32 LIFX_PORT = 56700;
-        private const String BROADCAST_IP_ADDRESS = "255.255.255.255";
-
         private struct ConnectionState
         {
             public DatagramSocket UDPClient { get; set; }
@@ -25,33 +23,29 @@ namespace LifxLib
             public HostName BulbAddress { get; set; }
         }
 
-        private Queue<IncomingMessage> mIncomingQueue = new Queue<IncomingMessage>(10);
+        private List<LifxPanController> foundPanControllers = new List<LifxPanController>();
+        private static LifxCommunicator mInstance = new LifxCommunicator();
+        private int timeoutMilliseconds = 1000;
+        private static DatagramSocket lifxCommunicatorClient = new DatagramSocket();
+        //private static DataWriter writer;
 
-        private List<LifxPanController> mFoundPanHandlers = new List<LifxPanController>();
+        public List<LifxPanController> ConnectedPanControllers { get { return foundPanControllers; } }
+        public bool IsInitialized { get; set; }
+        private bool IsDisposed { get; set; }
 
-        private int mTimeoutMilliseconds = 1000;
-        private DatagramSocket mSendCommandClient;
-        private DatagramSocket mListnerClient;
-        private bool mIsInitialized = false;
-        private bool mIsDisposed = false;
-        private static LifxCommunicator mInstance  = new LifxCommunicator();
+        public static LifxCommunicator Instance { get { return mInstance; } private set { mInstance = value; } }
+        public event EventHandler<LifxMessage> MessageRecieved;
+        public event EventHandler<LifxPanController> PanControllerFound;
 
-        public static LifxCommunicator Instance
-        {
-            get
-            {
-                return mInstance;
-            }
-        }
         public int TimeoutMilliseconds
         {
-            get { return mTimeoutMilliseconds; }
-            set { mTimeoutMilliseconds = value; }
+            get { return timeoutMilliseconds; }
+            set { timeoutMilliseconds = value; }
         }
 
         private LifxCommunicator()
         {
-
+            Initialize();
         }
 
         /// <summary>
@@ -59,72 +53,77 @@ namespace LifxLib
         /// </summary>
         public async void Initialize()
         {
-            HostName endPoint = new HostName(BROADCAST_IP_ADDRESS);
-            mListnerClient = new DatagramSocket();
-            mListnerClient.MessageReceived += mListnerClient_MessageReceived;
-            await mListnerClient.BindEndpointAsync(endPoint, LIFX_PORT.ToString());
+            lifxCommunicatorClient = new DatagramSocket();
+            lifxCommunicatorClient.MessageReceived += lifxCommunicatorClient_MessageReceived;
+            CoreApplication.Properties.Add("listener", lifxCommunicatorClient);
+            //await lifxCommunicatorClient.BindServiceNameAsync(LifxHelper.LIFX_PORT.ToString());
+            await lifxCommunicatorClient.BindEndpointAsync(null, LifxHelper.LIFX_PORT.ToString());
 
-            mIsInitialized = true;
+            IsInitialized = true;
         }
 
-        void mListnerClient_MessageReceived(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)
+        private void lifxCommunicatorClient_MessageReceived(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)
         {
-            if (mIsDisposed)
+            if (IsDisposed)
                 return;
 
-            Byte[] receiveBytes = { };
+            uint bufferArraySize = args.GetDataReader().UnconsumedBufferLength;
+            Byte[] receiveBytes = new Byte[bufferArraySize];
             args.GetDataReader().ReadBytes(receiveBytes);
-            string receiveString = LifxHelper.ByteArrayToString(receiveBytes);
 
+            string receiveString = LifxHelper.ByteArrayToString(receiveBytes);
             LifxDataPacket packet = new LifxDataPacket(receiveBytes);
-            mIncomingQueue.Enqueue(new IncomingMessage() { Data = packet, BulbAddress = args.RemoteAddress });            
+
+            LifxMessage receivedMessage = LifxHelper.PacketToMessage(packet);
+
+            if (receivedMessage != null)
+            {
+                if (receivedMessage.PacketType == MessagePacketType.PanGateway)
+                    AddDiscoveredPanHandler(new LifxPanController()
+                    {
+                        MACAddress = LifxHelper.ByteArrayToString(receivedMessage.ReceivedData.PanControllerMac),
+                        IPAddress = args.RemoteAddress.DisplayName
+                    });
+                else
+                    MessageRecieved.Invoke(this, receivedMessage);
+            }
         }
 
         /// <summary>
         /// Discovers the PanControllers (including their bulbs)
         /// </summary>
         /// <returns>List of bulbs</returns>
-        public List<LifxPanController> Discover()
+        public async Task Discover()
         {
-           LifxGetPANGatewayCommand getPANCommand = new LifxGetPANGatewayCommand();
+            LifxGetPanGatewayCommand getPanGatewayCommand = new LifxGetPanGatewayCommand();
+            foundPanControllers.Clear();
+            timeoutMilliseconds = 1500;
 
-           mFoundPanHandlers.Clear();
-           mTimeoutMilliseconds = 1500;
-           int savedTimeout = mTimeoutMilliseconds;
+            int savedTimeout = timeoutMilliseconds;
 
-           try
-           {
-               SendCommand(getPANCommand, LifxPanController.UninitializedPanController);
-
-               foreach (LifxPanController controller in mFoundPanHandlers)
-               {
-                   LifxGetLightStatusCommand getBulbs = new LifxGetLightStatusCommand();
-                   getBulbs.IsDiscoveryCommand = true;
-
-                   SendCommand(getBulbs, controller);
-               }
-
-               return mFoundPanHandlers;
-           }
-           catch (Exception e)
-           {
-               //In case of any other exception, re-throw
-               throw e;
-           }
-           finally 
-           {
-               mTimeoutMilliseconds = savedTimeout;
-           }
+            try
+            {
+                await SendCommand(getPanGatewayCommand, LifxPanController.UninitializedPanController);
+            }
+            catch (Exception e)
+            {
+                //In case of any other exception, re-throw
+                throw e;
+            }
+            finally
+            {
+                timeoutMilliseconds = savedTimeout;
+            }
         }
 
-        public LifxReceivedMessage SendCommand(LifxCommand command, LifxBulb bulb)
+        public async Task SendCommand(LifxCommand command, LifxBulb bulb)
         {
-            return SendCommand(command, bulb.MacAddress, bulb.PanHandler, bulb.HostName);
+            await SendCommand(command, bulb.MACAddress, bulb.PanController.MACAddress, bulb.IPAddress);
         }
 
-        public LifxReceivedMessage SendCommand(LifxCommand command, LifxPanController panController)
+        public async Task SendCommand(LifxCommand command, LifxPanController panController)
         {
-            return SendCommand(command, "", panController.MacAddress, panController.HostName);
+            await SendCommand(command, "", panController.MACAddress, panController.IPAddress);
         }
 
         /// <summary>
@@ -133,107 +132,58 @@ namespace LifxLib
         /// <param name="command"></param>
         /// <param name="bulb">The bulb to send the command to.</param>
         /// <returns>Returns the response message. If the command does not trigger a response it will reurn null. </returns>
-        public LifxReceivedMessage SendCommand(LifxCommand command, string macAddress, string panController, HostName endPoint)
+        public async Task SendCommand(LifxCommand command, string bulbMacAddress, string panControllerMacAddress, string remoteIPAddress)
         {
             if (!IsInitialized)
                 throw new InvalidOperationException("The communicator needs to be initialized before sending a command.");
-           
+
             LifxDataPacket packet = new LifxDataPacket(command);
-            packet.TargetMac = LifxHelper.StringToByteArray(macAddress);
-            packet.PanControllerMac = LifxHelper.StringToByteArray(panController);
+            packet.TargetMac = LifxHelper.StringToByteArray(bulbMacAddress);
+            packet.PanControllerMac = LifxHelper.StringToByteArray(panControllerMacAddress);
 
-            DataWriter writer = new DataWriter(mSendCommandClient.OutputStream);
-            writer.WriteBytes(packet.PacketData);
-
-            DateTime commandSentTime = DateTime.Now;
-
-            if (command.ReturnMessage == null)
-                return null;
-
-            while ((DateTime.Now - commandSentTime).TotalMilliseconds < mTimeoutMilliseconds)
+            using (var stream = await lifxCommunicatorClient.GetOutputStreamAsync(new HostName(remoteIPAddress), LifxHelper.LIFX_PORT.ToString()))
             {
-                if (mIncomingQueue.Count != 0)
+                using (var writer = new DataWriter(stream))
                 {
-                    IncomingMessage mess = mIncomingQueue.Dequeue();
-                    LifxDataPacket receivedPacket = mess.Data;
-
-                    if (receivedPacket.PacketType == LifxPANGatewayStateMessage.PACKET_TYPE) 
-                    { 
-                        //Panhandler identified
-                        LifxPANGatewayStateMessage panGateway = new LifxPANGatewayStateMessage();
-                        panGateway.ReceivedData = receivedPacket;
-
-                        AddDiscoveredPanHandler(new LifxPanController(
-                               LifxHelper.ByteArrayToString(receivedPacket.TargetMac),
-                               mess.BulbAddress));
-
-                    }
-                    else if (receivedPacket.PacketType == LifxLightStatusMessage.PACKET_TYPE && command.IsDiscoveryCommand)
-                    {
-                        //Panhandler identified
-                        LifxLightStatusMessage panGateway = new LifxLightStatusMessage();
-                        panGateway.ReceivedData = receivedPacket;
-
-                        AddDiscoveredBulb(
-                            LifxHelper.ByteArrayToString(receivedPacket.TargetMac),   
-                            LifxHelper.ByteArrayToString(receivedPacket.PanControllerMac));
-                    }
-                    else if (receivedPacket.PacketType == command.ReturnMessage.PacketType)
-                    {
-                       
-                        command.ReturnMessage.ReceivedData = receivedPacket;
-                        mIncomingQueue.Clear();
-                        return command.ReturnMessage;
-                    }
+                    writer.WriteBytes(packet.PacketData);
+                    await writer.StoreAsync();
                 }
             }
-
-            if (command.IsDiscoveryCommand)
-                return null;
-
-            if (command.RetryCount > 0)
-            {
-                command.RetryCount -= 1;
-
-                //Recurssion
-                return SendCommand(command, macAddress, panController, endPoint);
-            }
-            else
-                throw new TimeoutException("Did not get a reply from bulb in a timely fashion");
-
         }
 
 
         private void AddDiscoveredPanHandler(LifxPanController foundPanHandler)
         {
-            foreach (LifxPanController handler in mFoundPanHandlers)
+            foreach (LifxPanController handler in foundPanControllers)
             {
-                if (handler.MacAddress == foundPanHandler.MacAddress)
+                if (handler.MACAddress == foundPanHandler.MACAddress)
                     return;//already added
             }
 
-            mFoundPanHandlers.Add(foundPanHandler);
+            foundPanHandler.Bulbs.Add(new LifxBulb(foundPanHandler, foundPanHandler.IPAddress, foundPanHandler.MACAddress));
+            foundPanControllers.Add(foundPanHandler);
+            PanControllerFound.Invoke(this, foundPanHandler);
         }
 
-        private void AddDiscoveredBulb(string macAddress, string panController)
-        {
-            foreach (LifxPanController controller in mFoundPanHandlers)
-            {
-                if (controller.MacAddress == panController)
-                {
-                    foreach (LifxBulb bulb in controller.Bulbs)
-                    {
-                        if (bulb.MacAddress == macAddress)
-                            return;
-                    }
+        //private void AddDiscoveredBulb(string macAddress, string panController)
+        //{
+        //    foreach (LifxPanController controller in foundPanControllers)
+        //    {
+        //        if (controller.MACAddress == panController)
+        //        {
+        //            foreach (LifxBulb bulb in controller.Bulbs)
+        //            {
+        //                if (bulb.MACAddress == macAddress)
+        //                    return;
+        //            }
 
-                    controller.Bulbs.Add(new LifxBulb(controller, macAddress));
-                    return;
-                }
-            }
+        //            controller.Bulbs.Add(new LifxBulb(controller, macAddress));
+        //            return;
+        //        }
+        //    }
 
-            throw new InvalidOperationException("Should not end up here basically.");
-        }
+        //    throw new InvalidOperationException("Should not end up here basically.");
+        //}
 
         //private Task<DatagramSocket> GetConnectedClient(LifxCommand command, HostName endPoint)
         //{
@@ -261,7 +211,7 @@ namespace LifxLib
         //            {
         //                mSendCommandClient.Dispose();
         //                return CreateClient(command, endPoint); 
-                        
+
         //            }
         //            else
         //            {
@@ -288,23 +238,16 @@ namespace LifxLib
         //    }
         //}
 
-        public bool IsInitialized
-        {
-            get { return mIsInitialized; }
-            set { mIsInitialized = value; }
-        }
-
         #region IDisposable Members
 
         public void CloseConnections()
         {
-            mListnerClient.Dispose();
-            mSendCommandClient.Dispose();
+            lifxCommunicatorClient.Dispose();
         }
 
         public void Dispose()
         {
-            mIsDisposed = true;
+            IsDisposed = true;
             CloseConnections();
         }
 

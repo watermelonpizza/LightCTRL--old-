@@ -19,7 +19,7 @@ namespace LifxLib
             Size = (ushort)(messageToPackage.GetRawMessage().Length + 36);
             Protocol = STANDARD_PROTOCOL;
 
-            PacketType = messageToPackage.PacketType;
+            PacketType = (ushort)messageToPackage.PacketType;
             Payload = messageToPackage.GetRawMessage();
         }
 

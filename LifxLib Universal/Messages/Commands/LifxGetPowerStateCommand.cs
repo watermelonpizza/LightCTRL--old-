@@ -4,10 +4,10 @@ namespace LifxLib.Messages
 {
     public class LifxGetPowerStateCommand : LifxCommand
     {
-        private const UInt16 PACKET_TYPE = 0x14;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.GetPowerState;
 
         public LifxGetPowerStateCommand()
-            : base(PACKET_TYPE, new LifxPowerStateMessage())
+            : base(PACKET_TYPE)
         {
 
         }

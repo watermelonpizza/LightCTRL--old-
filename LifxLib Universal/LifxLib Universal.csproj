@@ -52,7 +52,7 @@
     <Compile Include="Messages\Commands\LifxCommand.cs" />
     <Compile Include="Messages\Commands\LifxGetLabelCommand.cs" />
     <Compile Include="Messages\Commands\LifxGetLightStatusCommand.cs" />
-    <Compile Include="Messages\Commands\LifxGetPANGatewayCommand.cs" />
+    <Compile Include="Messages\Commands\LifxGetPanGatewayCommand.cs" />
     <Compile Include="Messages\Commands\LifxGetPowerStateCommand.cs" />
     <Compile Include="Messages\Commands\LifxGetTagLabelCommand.cs" />
     <Compile Include="Messages\Commands\LifxGetTagsCommand.cs" />
@@ -63,10 +63,9 @@
     <Compile Include="Messages\Commands\LifxSetTagsCommand.cs" />
     <Compile Include="Messages\ResponseMessages\LifxLabelMessage.cs" />
     <Compile Include="Messages\ResponseMessages\LifxLightStatusMessage.cs" />
-    <Compile Include="Messages\ResponseMessages\LifxPANGatewayStateMessage.cs" />
-    <Compile Include="Messages\ResponseMessages\LifxPANServiceType.cs" />
+    <Compile Include="Messages\ResponseMessages\LifxPanGatewayStateMessage.cs" />
     <Compile Include="Messages\ResponseMessages\LifxPowerStateMessage.cs" />
-    <Compile Include="Messages\ResponseMessages\LifxReceivedMessage.cs" />
+    <Compile Include="Messages\ResponseMessages\LifxMessage.cs" />
     <Compile Include="Messages\ResponseMessages\LifxTagLabelMessage.cs" />
     <Compile Include="Messages\ResponseMessages\LifxTagsMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

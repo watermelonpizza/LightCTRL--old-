@@ -4,10 +4,10 @@ namespace LifxLib.Messages
 {
     public class LifxGetTagsCommand : LifxCommand
     {
-        private const UInt16 PACKET_TYPE = 0x1A;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.GetTags;
 
         public LifxGetTagsCommand()
-            : base(PACKET_TYPE, new LifxTagsMessage())
+            : base(PACKET_TYPE)
         {
             
         }

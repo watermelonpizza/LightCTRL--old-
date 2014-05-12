@@ -7,23 +7,16 @@ namespace LifxLib.Messages
     /// </summary>
     public abstract class LifxCommand
     {
-        private UInt16 mPacketType = 0;
-        private LifxReceivedMessage mReturnMessage;
+        private CommandPacketType mPacketType = CommandPacketType.Unknown;
         private Int32 mTimeoutMs = 0;
         private DateTime mTimestamp = DateTime.Now;
         private Boolean mIsBroadcastCommand = false;
         private UInt16 mRetryCount = 3;
         private Boolean mIsDiscoveryCommand = false;
 
-        public LifxCommand(UInt16 packetType)
+        public LifxCommand(CommandPacketType packetType)
         {
             mPacketType = packetType;
-        }
-
-        public LifxCommand(UInt16 packetType, LifxReceivedMessage awaitedReturnMessage)
-        {
-            mPacketType = packetType;
-            mReturnMessage = awaitedReturnMessage;
         }
 
         public virtual byte[] GetRawMessage()
@@ -31,14 +24,9 @@ namespace LifxLib.Messages
             return new byte[0];
         }
 
-        public ushort PacketType
+        public CommandPacketType PacketType
         {
             get {  return mPacketType; }
-        }
-
-        public LifxReceivedMessage ReturnMessage
-        {
-            get{ return mReturnMessage;}
         }
 
         public Int32 Timeout

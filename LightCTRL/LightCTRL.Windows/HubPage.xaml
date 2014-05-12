@@ -43,9 +43,9 @@
                         <Image Source="{Binding ImagePath}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Title}" Height="99" Width="99"/>
                     </Border>
                     <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                        <TextBlock Text="{Binding Title}" Style="{ThemeResource ListViewItemTextBlockStyle}"/>
-                        <TextBlock Text="{Binding Subtitle}" Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}" />
-                        <TextBlock Text="{Binding Description}" Style="{ThemeResource ListViewItemContentTextBlockStyle}"/>
+                        <TextBlock Text="{Binding Title}" />
+                        <TextBlock Text="{Binding Subtitle}" />
+                        <TextBlock Text="{Binding Description}" />
                     </StackPanel>
                 </Grid>
             </DataTemplate>
@@ -61,8 +61,8 @@
                         <Image Source="{Binding ImagePath}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Title}" Height="99" Width="99"/>
                     </Border>
                     <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                        <TextBlock Text="{Binding Title}" Style="{ThemeResource ListViewItemTextBlockStyle}"/>
-                        <TextBlock Text="{Binding Subtitle}" Style="{ThemeResource ListViewItemContentTextBlockStyle}"/>
+                        <TextBlock Text="{Binding Title}" />
+                        <TextBlock Text="{Binding Subtitle}" />
                     </StackPanel>
                 </Grid>
             </DataTemplate>
@@ -70,7 +70,9 @@
     </Page.Resources>
 
     <Grid x:Name="LayoutRoot">
-        <Hub x:Name="Hub" x:Uid="Hub" Header="LightCTRL" Background="{ThemeResource HubBackgroundImageBrush}"/>
-        <ToggleSwitch Header="ToggleSwitch" HorizontalAlignment="Left" Margin="35,120" VerticalAlignment="Top"/>
+        <Hub x:Name="Hub" x:Uid="Hub" Header="LightCTRL" Background="Black" Grid.ColumnSpan="3"/>
+        <ToggleSwitch Header="ToggleSwitch" HorizontalAlignment="Left" Margin="35,120,0,0" VerticalAlignment="Top" Toggled="ToggleSwitch_Toggled" Grid.ColumnSpan="2"/>
+        <Button Content="Connect" HorizontalAlignment="Left" Margin="35,232,0,0" VerticalAlignment="Top" Click="Button_Click"/>
+        <TextBox x:Name="PacketInfo" HorizontalAlignment="Left" Margin="35,305,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Height="249" Width="300"/>
     </Grid>
 </Page>

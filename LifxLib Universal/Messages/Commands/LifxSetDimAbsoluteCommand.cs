@@ -6,10 +6,10 @@ namespace LifxLib.Messages
     {
         private UInt16 mDimLevel;
         private UInt32 mDurationMilliseconds;
-        private const UInt16 PACKET_TYPE = 0x68;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.SetDimAbsolute;
 
         public LifxSetDimAbsoluteCommand(UInt16 dimLevel, UInt32 durationMilliseconds)
-            : base(PACKET_TYPE, null)
+            : base(PACKET_TYPE)
         {
             mDimLevel = dimLevel;
             mDurationMilliseconds = durationMilliseconds;

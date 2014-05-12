@@ -2,22 +2,28 @@
 
 namespace LifxLib.Messages
 {
-    public class LifxPANGatewayStateMessage : LifxReceivedMessage
+    public class LifxPanGatewayStateMessage : LifxMessage
     {
-        public const UInt16 PACKET_TYPE = 0x03;
+        public enum LifxPanServiceType
+        {
+            UDP = (byte)0x01,
+            TCP = (byte)0x02
+        }
 
-        public LifxPANGatewayStateMessage()
-            : base(PACKET_TYPE)
+        public const MessagePacketType PACKET_TYPE = MessagePacketType.PanGateway;
+
+        public LifxPanGatewayStateMessage(LifxDataPacket packet)
+            : base(packet, PACKET_TYPE)
         {
 
         }
 
 
-        public LifxPANServiceType ServiceType
+        public LifxPanServiceType ServiceType
         {
             get
             {
-                return (LifxPANServiceType)base.ReceivedData.Payload[0];
+                return (LifxPanServiceType)base.ReceivedData.Payload[0];
             }
         }
 

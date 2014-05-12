@@ -5,10 +5,10 @@ namespace LifxLib.Messages
     public class LifxSetPowerStateCommand : LifxCommand
     {
         private LifxPowerState mStateToSet = LifxPowerState.Unknown;
-        private const UInt16 PACKET_TYPE = 0x15;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.SetPowerState;
 
         public LifxSetPowerStateCommand(LifxPowerState stateToSet)
-            : base(PACKET_TYPE, new LifxPowerStateMessage())
+            : base(PACKET_TYPE)
         {
             mStateToSet = stateToSet;
         }

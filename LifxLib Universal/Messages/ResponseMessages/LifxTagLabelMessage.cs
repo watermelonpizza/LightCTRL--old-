@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Text;
 
 namespace LifxLib.Messages
 {
-    public class LifxTagLabelMessage : LifxReceivedMessage
+    public class LifxTagLabelMessage : LifxMessage
     {
-        private const UInt16 PACKET_TYPE = 0x1F;
+        private const MessagePacketType PACKET_TYPE = MessagePacketType.TagLabel;
 
-        public LifxTagLabelMessage()
-            : base(PACKET_TYPE)
+        public LifxTagLabelMessage(LifxDataPacket packet)
+            : base(packet, PACKET_TYPE)
         {
 
         }
@@ -24,7 +25,7 @@ namespace LifxLib.Messages
         {
             get 
             {
-                return Encoding.ASCII.GetString(base.ReceivedData.Payload, 8, 32);
+                return Encoding.UTF8.GetString(base.ReceivedData.Payload, 8, 32);
             }
         }
     }

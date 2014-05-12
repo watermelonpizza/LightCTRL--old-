@@ -2,12 +2,12 @@
 
 namespace LifxLib.Messages
 {
-    public class LifxTagsMessage : LifxReceivedMessage
+    public class LifxTagsMessage : LifxMessage
     {
-        private const UInt16 PACKET_TYPE = 0x1C;
+        private const MessagePacketType PACKET_TYPE = MessagePacketType.Tags;
 
-        public LifxTagsMessage()
-            : base(PACKET_TYPE)
+        public LifxTagsMessage(LifxDataPacket packet)
+            : base(packet, PACKET_TYPE)
         {
 
         }

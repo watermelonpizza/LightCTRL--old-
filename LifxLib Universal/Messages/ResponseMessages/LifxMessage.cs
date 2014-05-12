@@ -2,22 +2,21 @@
 
 namespace LifxLib.Messages
 {
-    public abstract class LifxReceivedMessage
+    public abstract class LifxMessage
     {
         private LifxDataPacket mData;
-        private UInt16 mPacketType = 0;
-        
+        private MessagePacketType mPacketType = MessagePacketType.Unknown;
 
-        public LifxReceivedMessage(LifxDataPacket data, UInt16 packetType)
+        public LifxMessage(LifxDataPacket data, MessagePacketType packetType)
         {
             mData = data;
             mPacketType = packetType;
         }
 
-        public LifxReceivedMessage(UInt16 packetType)
-        {
-            mPacketType = packetType;
-        }
+        //public LifxMessage(MessagePacketType packetType)
+        //{
+        //    mPacketType = packetType;
+        //}
 
         public LifxDataPacket ReceivedData
         {
@@ -25,7 +24,7 @@ namespace LifxLib.Messages
             set { mData = value; }
         }
 
-        public UInt16 PacketType
+        public MessagePacketType PacketType
         {
             get { return mPacketType; }
         }

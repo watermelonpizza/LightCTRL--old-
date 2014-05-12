@@ -10,10 +10,10 @@ namespace LifxLib.Messages
         private UInt16 mKelvin = 0;
         private UInt32 mFadeTimeMilliseconds = 0;
 
-        private const UInt16 PACKET_TYPE = 0x66;
+        private const CommandPacketType PACKET_TYPE = CommandPacketType.SetLightState;
 
         public LifxSetLightStateCommand(UInt16 hue, UInt16 saturation, UInt16 brightness, UInt16 kelvin, UInt32 fadeTimeMilliseconds)
-            : base(PACKET_TYPE, null)
+            : base(PACKET_TYPE)
         {
             mHue = hue;
             mSaturation = saturation;

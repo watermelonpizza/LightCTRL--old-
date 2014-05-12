@@ -15,9 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)HubPage.xaml.cs">
-      <DependentUpon>HubPage.xaml</DependentUpon>
-    </Compile>
     <Content Include="$(MSBuildThisFileDirectory)Assets\LightGray.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\MediumGray.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\DarkGray.png" />
@@ -26,11 +23,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\SuspensionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ObservableDictionary.cs" />
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-US\Resources.resw" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)HubPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 </Project>

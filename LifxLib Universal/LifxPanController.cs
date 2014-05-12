@@ -7,51 +7,23 @@ namespace LifxLib
 {
     public class LifxPanController
     {
-        private string mMacAddress = "";        
-        private HostName mIpAddress;
-        List<LifxBulb> mBulbs = new List<LifxBulb>();
-
-       
-        public LifxPanController(string macAddress, HostName ipAddress)
-        {
-            mMacAddress = macAddress;
-            mIpAddress = ipAddress;
-        }
+        public string MACAddress { get; set; }
+        public string IPAddress { get; set; }
+        public List<LifxBulb> Bulbs { get; set; }
 
         /// <summary>
         /// Uninitialized bulb, for detection for instance
         /// </summary>
         public LifxPanController()
-        { 
-            
+        {
+            MACAddress = "";
+            IPAddress = "";
+            Bulbs = new List<LifxBulb>();
         }
-
 
         public static LifxPanController UninitializedPanController
         {
-            get { return new LifxPanController(); }
-        }
-
-        
-        /// <summary>
-        /// Will return empty so that pan controller messages are sent to all bulbs
-        /// </summary>
-        public string MacAddress
-        {
-            get { return mMacAddress; }
-            set { mMacAddress = value; }
-        }
-
-        public HostName HostName
-        {
-            get { return mIpAddress; }
-            set { mIpAddress = value; }
-        }
-        
-        public List<LifxBulb> Bulbs
-        {
-            get { return mBulbs; }
-            set { mBulbs = value; }
+            get { return new LifxPanController() { IPAddress = LifxHelper.GetLocalBroadcastIPAddress(), MACAddress = "" }; }
         }
     }
 }

@@ -3,12 +3,12 @@ using System.Text;
 
 namespace LifxLib.Messages
 {
-    public class LifxLightStatusMessage : LifxReceivedMessage
+    public class LifxLightStatusMessage : LifxMessage
     {
-        public const UInt16 PACKET_TYPE = 0x6B;
+        public const MessagePacketType PACKET_TYPE = MessagePacketType.LightStatus;
 
-        public LifxLightStatusMessage()
-            : base(PACKET_TYPE)
+        public LifxLightStatusMessage(LifxDataPacket packet)
+            : base(packet, PACKET_TYPE)
         {
 
         }
@@ -70,7 +70,7 @@ namespace LifxLib.Messages
         {
             get
             {
-                return Encoding.ASCII.GetString(base.ReceivedData.Payload, 12,32);
+                return Encoding.UTF8.GetString(base.ReceivedData.Payload, 12,32);
             }
         }
 
