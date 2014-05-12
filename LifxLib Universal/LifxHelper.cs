@@ -9,7 +9,7 @@ namespace LifxLib
     {
         public const Int32 LIFX_PORT = 56700;
         public const String BROADCAST_IP_ADDRESS = "255.255.255.255";
-        private const String LOCAL_PREFIX_IP = "0.169.254.";
+        private const String LOCAL_PREFIX_IP = "169.254.";
 
         public static string ByteArrayToString(byte[] ba)
         {

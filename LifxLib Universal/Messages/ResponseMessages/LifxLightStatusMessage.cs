@@ -63,9 +63,6 @@ namespace LifxLib.Messages
             }
         }
 
-
-        
-
         public string Label
         {
             get

@@ -23,19 +23,19 @@ namespace LifxLib
             Kelvin = 0;
         }
 
-        public HSLColor HSLColor
-        {
-            get
-            {
-                return new HSLColor((double)(Hue * 240 / 65535), (double)(Saturation * 240 / 65535), (double)(Luminosity * 240 / 65535));
-            }
-            set
-            {
-                Hue = (ushort)(value.Hue * 65535 / 240);
-                Saturation = (ushort)(value.Saturation * 65535 / 240);
-                Luminosity = (ushort)(value.Luminosity * 65535 / 240);
-            }
-        }
+        //public HSLColor HSLColor
+        //{
+        //    get
+        //    {
+        //        return new HSLColor((double)(Hue * 240 / 65535), (double)(Saturation * 240 / 65535), (double)(Luminosity * 240 / 65535));
+        //    }
+        //    set
+        //    {
+        //        Hue = (ushort)(value.Hue * 65535 / 240);
+        //        Saturation = (ushort)(value.Saturation * 65535 / 240);
+        //        Luminosity = (ushort)(value.Luminosity * 65535 / 240);
+        //    }
+        //}
 
         //public Color DotNetColor
         //{

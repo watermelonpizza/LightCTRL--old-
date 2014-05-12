@@ -37,8 +37,8 @@ namespace LightCTRL
         private readonly NavigationHelper navigationHelper;
         private readonly ObservableDictionary defaultViewModel = new ObservableDictionary();
         private readonly ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView("Resources");
+        private bool firstLightStatusFlag = true;
         private LifxBulb bulb;
-        private delegate void DSetTextBox(string text);
 
         public HubPage()
         {
@@ -62,18 +62,69 @@ namespace LightCTRL
             LifxCommunicator.Instance.PanControllerFound += Instance_PanControllerFound;
         }
 
+        private void SetControlState(bool enabled = true)
+        {
+            //PowerToggleSwitch.IsEnabled = enabled;
+            FadeTimeTextBox.IsEnabled = enabled;
+            HueSlider.IsEnabled = enabled;
+            SaturationSlider.IsEnabled = enabled;
+            LuminositySlider.IsEnabled = enabled;
+            KelvinSlider.IsEnabled = enabled;
+        }
+
+        private void BindValueChangedEventHandlers()
+        {
+            HueSlider.ValueChanged += HueSlider_ValueChanged;
+            SaturationSlider.ValueChanged += SaturationSlider_ValueChanged;
+            LuminositySlider.ValueChanged += LuminositySlider_ValueChanged;
+            KelvinSlider.ValueChanged += KelvinSlider_ValueChanged;
+        }
+
+        private void UnBindValueChangedEventHandlers()
+        {
+            HueSlider.ValueChanged -= HueSlider_ValueChanged;
+            SaturationSlider.ValueChanged -= SaturationSlider_ValueChanged;
+            LuminositySlider.ValueChanged -= LuminositySlider_ValueChanged;
+            KelvinSlider.ValueChanged -= KelvinSlider_ValueChanged;
+        }
+
         private async void Instance_PanControllerFound(object sender, LifxPanController e)
         {
             bulb = e.Bulbs[0];
+            bulb.SendGetPowerStateCommand();
+
+            await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+            {
+#if WINDOWS_PHONE_APP
+                await StatusBar.GetForCurrentView().ProgressIndicator.HideAsync();
+#endif
+                PowerToggleSwitch.IsEnabled = true;
+                ConnectButton.IsEnabled = false;
+            });
         }
 
         private async void Instance_MessageRecieved(object sender, LifxMessage e)
         {
             if (e.PacketType == MessagePacketType.PowerState)
             {
-                if (((LifxPowerStateMessage)e).PowerState == LifxPowerState.On)
+                LifxPowerStateMessage message = (LifxPowerStateMessage)e;
+
+                if (message.PowerState == LifxPowerState.On)
                 {
+                    await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        PowerToggleSwitch.IsOn = true;
+                        SetControlState(true);
+                    });
                     bulb.SendGetLightStatusCommand();
+                }
+                else if (message.PowerState == LifxPowerState.Off)
+                {
+                    await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        PowerToggleSwitch.IsOn = false;
+                        SetControlState(false);
+                    });
                 }
             }
             else if (e.PacketType == MessagePacketType.LightStatus)
@@ -81,7 +132,22 @@ namespace LightCTRL
                 await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
                     LifxLightStatusMessage message = (LifxLightStatusMessage)e;
-                    PacketInfo.Text = message.Hue.ToString() + "\n\r" + message.Saturation.ToString();
+                    PacketInfoTextBox.Text = "Hue: " + message.Hue.ToString() + "\n" +
+                                             "Saturation: " + message.Saturation.ToString() + "\n" +
+                                             "Luminosity: " + message.Lumnosity.ToString() + "\n" +
+                                             "Kelvin: " + message.Kelvin.ToString();
+                    FadeTimeTextBox.Text = message.Dim.ToString();
+
+                    if (firstLightStatusFlag)
+                    {
+                        UnBindValueChangedEventHandlers();
+                        HueSlider.Value = message.Hue;
+                        SaturationSlider.Value = message.Saturation;
+                        LuminositySlider.Value = message.Lumnosity;
+                        KelvinSlider.Value = KelvinSlider.Value;
+                        BindValueChangedEventHandlers();
+                        firstLightStatusFlag = false;
+                    }
                 });
             }
             //throw new NotImplementedException();
@@ -179,17 +245,61 @@ namespace LightCTRL
 
         #endregion
 
-        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        private void PowerToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             if (((ToggleSwitch)sender).IsOn)
                 bulb.SendSetPowerStateCommand(LifxPowerState.On);
             else
+            {
+                SetControlState(false);
                 bulb.SendSetPowerStateCommand(LifxPowerState.Off);
+            }
         }
 
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private async void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
+#if WINDOWS_PHONE_APP
+            await StatusBar.GetForCurrentView().ProgressIndicator.ShowAsync();
+#endif
             await LifxCommunicator.Instance.Discover();
+        }
+
+        private void HueSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            SetColour();
+        }
+
+        private void SaturationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            SetColour();
+        }
+
+        private void LuminositySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            SetColour();
+        }
+
+        private void KelvinSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            UnBindValueChangedEventHandlers();
+                HueSlider.Value = 0;
+                SaturationSlider.Value = 0;
+            BindValueChangedEventHandlers();
+            SetColour();
+        }
+
+        private void SetColour()
+        {
+            bulb.SendSetColorCommand(new LifxColor()
+            {
+                Hue = (UInt16)HueSlider.Value,
+                Saturation = (UInt16)SaturationSlider.Value,
+                Luminosity = (UInt16)LuminositySlider.Value,
+                Kelvin = (UInt16)KelvinSlider.Value
+            },
+            Convert.ToUInt16(FadeTimeTextBox.Text));
+
+            bulb.SendGetLightStatusCommand();
         }
     }
 }

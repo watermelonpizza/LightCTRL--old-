@@ -5,7 +5,7 @@
     xmlns:local="using:LightCTRL"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}">
+    DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}" Background="Black">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -43,9 +43,9 @@
                         <Image Source="{Binding ImagePath}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Title}" Height="99" Width="99"/>
                     </Border>
                     <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                        <TextBlock Text="{Binding Title}" />
-                        <TextBlock Text="{Binding Subtitle}" />
-                        <TextBlock Text="{Binding Description}" />
+                        <TextBlock Text="{Binding Title}"/>
+                        <TextBlock Text="{Binding Subtitle}"/>
+                        <TextBlock Text="{Binding Description}"/>
                     </StackPanel>
                 </Grid>
             </DataTemplate>
@@ -61,8 +61,8 @@
                         <Image Source="{Binding ImagePath}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Title}" Height="99" Width="99"/>
                     </Border>
                     <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                        <TextBlock Text="{Binding Title}" />
-                        <TextBlock Text="{Binding Subtitle}" />
+                        <TextBlock Text="{Binding Title}"/>
+                        <TextBlock Text="{Binding Subtitle}"/>
                     </StackPanel>
                 </Grid>
             </DataTemplate>
@@ -70,9 +70,19 @@
     </Page.Resources>
 
     <Grid x:Name="LayoutRoot">
-        <Hub x:Name="Hub" x:Uid="Hub" Header="LightCTRL" Background="Black" Grid.ColumnSpan="3"/>
-        <ToggleSwitch Header="ToggleSwitch" HorizontalAlignment="Left" Margin="35,120,0,0" VerticalAlignment="Top" Toggled="ToggleSwitch_Toggled" Grid.ColumnSpan="2"/>
-        <Button Content="Connect" HorizontalAlignment="Left" Margin="35,232,0,0" VerticalAlignment="Top" Click="Button_Click"/>
-        <TextBox x:Name="PacketInfo" HorizontalAlignment="Left" Margin="35,305,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Height="249" Width="300"/>
+        <Hub x:Name="Hub" x:Uid="Hub" Header="LightCTRL" Grid.ColumnSpan="3" Background="Black"/>
+        <ToggleSwitch x:Name="PowerToggleSwitch" Header="Power" HorizontalAlignment="Left" Margin="204,117,0,0" VerticalAlignment="Top" Toggled="PowerToggleSwitch_Toggled" Width="172" IsEnabled="False"/>
+        <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Left" Margin="11,107,0,0" VerticalAlignment="Top" Click="ConnectButton_Click" Height="83" Width="169"/>
+        <TextBox x:Name="PacketInfoTextBox" HorizontalAlignment="Left" Margin="10,513,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="91" Width="364" PlaceholderText="Packet information will go here" IsReadOnly="True"/>
+        <Slider x:Name="HueSlider" HorizontalAlignment="Left" Margin="112,262,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="65535" Orientation="Horizontal" Height="57" SmallChange="100" ValueChanged="HueSlider_ValueChanged" IsEnabled="False"/>
+        <Slider x:Name="SaturationSlider" HorizontalAlignment="Left" Margin="112,320,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="65535" SmallChange="100" ValueChanged="SaturationSlider_ValueChanged" IsEnabled="False"/>
+        <Slider x:Name="LuminositySlider" HorizontalAlignment="Left" Margin="112,380,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="65535" SmallChange="100" ValueChanged="LuminositySlider_ValueChanged" IsEnabled="False"/>
+        <TextBlock HorizontalAlignment="Left" Margin="13,272,0,0" TextWrapping="Wrap" Text="Hue" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="13,330,0,0" TextWrapping="Wrap" Text="Saturation" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="13,390,0,0" TextWrapping="Wrap" Text="Luminosity" VerticalAlignment="Top"/>
+        <Slider x:Name="KelvinSlider" HorizontalAlignment="Left" Margin="111,440,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="30000" SmallChange="100" ValueChanged="KelvinSlider_ValueChanged" IsEnabled="False" Minimum="10000"/>
+        <TextBlock HorizontalAlignment="Left" Margin="12,450,0,0" TextWrapping="Wrap" Text="Kelvin" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="11,216,0,0" TextWrapping="Wrap" Text="Fade Time" VerticalAlignment="Top"/>
+        <TextBox x:Name="FadeTimeTextBox" HorizontalAlignment="Left" Margin="112,211,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262" InputScope="Number" PlaceholderText="Fade Time in Milliseconds" IsEnabled="False"/>
     </Grid>
 </Page>

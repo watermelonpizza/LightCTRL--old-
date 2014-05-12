@@ -24,5 +24,13 @@ namespace LifxLib.Messages
                     return LifxPowerState.Unknown;
             }
         }
+
+        public Boolean GetPowerStateAsBool()
+        {
+            if (PowerState == LifxPowerState.On)
+                return true;
+            else
+                return false;
+        }
     }
 }
