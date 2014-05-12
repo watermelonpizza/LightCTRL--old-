@@ -91,7 +91,7 @@ namespace LightCTRL
         private async void Instance_PanControllerFound(object sender, LifxPanController e)
         {
             bulb = e.Bulbs[0];
-            bulb.SendGetPowerStateCommand();
+            await bulb.SendGetPowerStateCommand();
 
             await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
             {
@@ -116,7 +116,7 @@ namespace LightCTRL
                         PowerToggleSwitch.IsOn = true;
                         SetControlState(true);
                     });
-                    bulb.SendGetLightStatusCommand();
+                    await bulb.SendGetLightStatusCommand();
                 }
                 else if (message.PowerState == LifxPowerState.Off)
                 {
@@ -141,10 +141,10 @@ namespace LightCTRL
                     if (firstLightStatusFlag)
                     {
                         UnBindValueChangedEventHandlers();
-                        HueSlider.Value = message.Hue;
-                        SaturationSlider.Value = message.Saturation;
-                        LuminositySlider.Value = message.Lumnosity;
-                        KelvinSlider.Value = KelvinSlider.Value;
+                            HueSlider.Value = message.Hue;
+                            SaturationSlider.Value = message.Saturation;
+                            LuminositySlider.Value = message.Lumnosity;
+                            KelvinSlider.Value = message.Kelvin;
                         BindValueChangedEventHandlers();
                         firstLightStatusFlag = false;
                     }
@@ -245,14 +245,14 @@ namespace LightCTRL
 
         #endregion
 
-        private void PowerToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        private async void PowerToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             if (((ToggleSwitch)sender).IsOn)
-                bulb.SendSetPowerStateCommand(LifxPowerState.On);
+                await bulb.SendSetPowerStateCommand(LifxPowerState.On);
             else
             {
                 SetControlState(false);
-                bulb.SendSetPowerStateCommand(LifxPowerState.Off);
+                await bulb.SendSetPowerStateCommand(LifxPowerState.Off);
             }
         }
 
@@ -266,11 +266,23 @@ namespace LightCTRL
 
         private void HueSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            if (KelvinSlider.Value != 0)
+            {
+                UnBindValueChangedEventHandlers();
+                    KelvinSlider.Value = 0;
+                BindValueChangedEventHandlers();
+            }
             SetColour();
         }
 
         private void SaturationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            if (KelvinSlider.Value != 0)
+            {
+                UnBindValueChangedEventHandlers();
+                    KelvinSlider.Value = 0;
+                BindValueChangedEventHandlers();
+            }
             SetColour();
         }
 
@@ -281,25 +293,28 @@ namespace LightCTRL
 
         private void KelvinSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            UnBindValueChangedEventHandlers();
-                HueSlider.Value = 0;
-                SaturationSlider.Value = 0;
-            BindValueChangedEventHandlers();
+            if (HueSlider.Value != 0 || SaturationSlider.Value != 0)
+            {
+                UnBindValueChangedEventHandlers();
+                    HueSlider.Value = 0;
+                    SaturationSlider.Value = 0;
+                BindValueChangedEventHandlers();
+            }
             SetColour();
         }
 
-        private void SetColour()
+        private async void SetColour()
         {
-            bulb.SendSetColorCommand(new LifxColor()
+            await bulb.SendSetColorCommand(new LifxColor()
             {
                 Hue = (UInt16)HueSlider.Value,
                 Saturation = (UInt16)SaturationSlider.Value,
                 Luminosity = (UInt16)LuminositySlider.Value,
-                Kelvin = (UInt16)KelvinSlider.Value
+                Kelvin = (UInt16)(KelvinSlider.Value) //Due to Kelvin scale from 0 -> 20,000 | LIFX prefers scale 10,000 -> 30,000 [yellow -> white]
             },
             Convert.ToUInt16(FadeTimeTextBox.Text));
 
-            bulb.SendGetLightStatusCommand();
+            await bulb.SendGetLightStatusCommand();
         }
     }
 }

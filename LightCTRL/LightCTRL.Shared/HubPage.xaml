@@ -74,13 +74,13 @@
         <ToggleSwitch x:Name="PowerToggleSwitch" Header="Power" HorizontalAlignment="Left" Margin="204,117,0,0" VerticalAlignment="Top" Toggled="PowerToggleSwitch_Toggled" Width="172" IsEnabled="False"/>
         <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Left" Margin="11,107,0,0" VerticalAlignment="Top" Click="ConnectButton_Click" Height="83" Width="169"/>
         <TextBox x:Name="PacketInfoTextBox" HorizontalAlignment="Left" Margin="10,513,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="91" Width="364" PlaceholderText="Packet information will go here" IsReadOnly="True"/>
-        <Slider x:Name="HueSlider" HorizontalAlignment="Left" Margin="112,262,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="65535" Orientation="Horizontal" Height="57" SmallChange="100" ValueChanged="HueSlider_ValueChanged" IsEnabled="False"/>
-        <Slider x:Name="SaturationSlider" HorizontalAlignment="Left" Margin="112,320,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="65535" SmallChange="100" ValueChanged="SaturationSlider_ValueChanged" IsEnabled="False"/>
-        <Slider x:Name="LuminositySlider" HorizontalAlignment="Left" Margin="112,380,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="65535" SmallChange="100" ValueChanged="LuminositySlider_ValueChanged" IsEnabled="False"/>
+        <Slider x:Name="HueSlider" HorizontalAlignment="Left" Margin="112,262,0,0" VerticalAlignment="Top" Width="263" LargeChange="2000" Maximum="65535" Orientation="Horizontal" Height="57" SmallChange="500" ValueChanged="HueSlider_ValueChanged" IsEnabled="False" StepFrequency="200"/>
+        <Slider x:Name="SaturationSlider" HorizontalAlignment="Left" Margin="112,320,0,0" VerticalAlignment="Top" Width="263" LargeChange="2000" Maximum="65535" SmallChange="500" ValueChanged="SaturationSlider_ValueChanged" IsEnabled="False" StepFrequency="200"/>
+        <Slider x:Name="LuminositySlider" HorizontalAlignment="Left" Margin="112,380,0,0" VerticalAlignment="Top" Width="263" LargeChange="2000" Maximum="65535" SmallChange="500" ValueChanged="LuminositySlider_ValueChanged" IsEnabled="False" StepFrequency="200"/>
         <TextBlock HorizontalAlignment="Left" Margin="13,272,0,0" TextWrapping="Wrap" Text="Hue" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="13,330,0,0" TextWrapping="Wrap" Text="Saturation" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="13,390,0,0" TextWrapping="Wrap" Text="Luminosity" VerticalAlignment="Top"/>
-        <Slider x:Name="KelvinSlider" HorizontalAlignment="Left" Margin="111,440,0,0" VerticalAlignment="Top" Width="263" LargeChange="1000" Maximum="30000" SmallChange="100" ValueChanged="KelvinSlider_ValueChanged" IsEnabled="False" Minimum="10000"/>
+        <Slider x:Name="KelvinSlider" HorizontalAlignment="Left" Margin="111,440,0,0" VerticalAlignment="Top" Width="263" LargeChange="2000" Maximum="10000" SmallChange="500" ValueChanged="KelvinSlider_ValueChanged" IsEnabled="False" StepFrequency="200"/>
         <TextBlock HorizontalAlignment="Left" Margin="12,450,0,0" TextWrapping="Wrap" Text="Kelvin" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="11,216,0,0" TextWrapping="Wrap" Text="Fade Time" VerticalAlignment="Top"/>
         <TextBox x:Name="FadeTimeTextBox" HorizontalAlignment="Left" Margin="112,211,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262" InputScope="Number" PlaceholderText="Fade Time in Milliseconds" IsEnabled="False"/>

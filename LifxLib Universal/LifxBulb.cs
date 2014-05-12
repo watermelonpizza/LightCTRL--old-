@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.Networking;
 using Windows.Networking.Sockets;
 using LifxLib.Messages;
@@ -22,10 +23,9 @@ namespace LifxLib
         /// Get current power state
         /// </summary>
         /// <returns></returns>
-        public async void SendGetPowerStateCommand()
+        public async Task SendGetPowerStateCommand()
         {
             LifxGetPowerStateCommand command = new LifxGetPowerStateCommand();
-
             await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
@@ -34,26 +34,26 @@ namespace LifxLib
         /// </summary>
         /// <param name="stateToSet"></param>
         /// <returns>Returns the set power state</returns>
-        public async void SendSetPowerStateCommand(LifxPowerState stateToSet)
+        public async Task SendSetPowerStateCommand(LifxPowerState stateToSet)
         {
             LifxSetPowerStateCommand command = new LifxSetPowerStateCommand(stateToSet);
             await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
-        public async void SendGetLabelCommand()
+        public async Task SendGetLabelCommand()
         {
             LifxGetLabelCommand command = new LifxGetLabelCommand();
             await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
 
-        public async void SendSetLabelCommand(string newLabel)
+        public async Task SendSetLabelCommand(string newLabel)
         {
             LifxSetLabelCommand command = new LifxSetLabelCommand(newLabel);
             await LifxCommunicator.Instance.SendCommand(command, this);
         }
 
-        public async void SendGetLightStatusCommand()
+        public async Task SendGetLightStatusCommand()
         {
 
             LifxGetLightStateCommand command = new LifxGetLightStateCommand();
@@ -63,16 +63,14 @@ namespace LifxLib
         }
 
 
-        public async void SendSetColorCommand(LifxColor color, UInt32 fadeTime)
+        public async Task SendSetColorCommand(LifxColor color, UInt32 fadeTime)
         {
-
             LifxSetLightStateCommand command = new LifxSetLightStateCommand(color.Hue, color.Saturation, color.Luminosity, color.Kelvin, fadeTime);
             await LifxCommunicator.Instance.SendCommand(command, this);
-        
         }
 
 
-        public async void SendSetDimLevelCommand(UInt16 dimLevel, UInt32 fadeTime)
+        public async Task SendSetDimLevelCommand(UInt16 dimLevel, UInt32 fadeTime)
         {
 
             LifxSetDimAbsoluteCommand command = new LifxSetDimAbsoluteCommand(dimLevel, fadeTime);

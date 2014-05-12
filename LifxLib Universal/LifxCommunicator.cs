@@ -12,6 +12,8 @@ namespace LifxLib
 {
     public class LifxCommunicator : IDisposable
     {
+        private static int MIN_PACKET_BUFFER_TIME = 100; //Stops spamming the LIFX
+
         private struct ConnectionState
         {
             public DatagramSocket UDPClient { get; set; }
@@ -24,8 +26,8 @@ namespace LifxLib
         }
 
         private List<LifxPanController> foundPanControllers = new List<LifxPanController>();
-        private static LifxCommunicator mInstance = new LifxCommunicator();
-        private int timeoutMilliseconds = 1000;
+        private static LifxCommunicator instance = new LifxCommunicator();
+        private DateTime lastPacketSentTime = DateTime.Now;
         private static DatagramSocket lifxCommunicatorClient = new DatagramSocket();
         //private static DataWriter writer;
 
@@ -33,15 +35,9 @@ namespace LifxLib
         public bool IsInitialized { get; set; }
         private bool IsDisposed { get; set; }
 
-        public static LifxCommunicator Instance { get { return mInstance; } private set { mInstance = value; } }
+        public static LifxCommunicator Instance { get { return instance; } private set { instance = value; } }
         public event EventHandler<LifxMessage> MessageRecieved;
         public event EventHandler<LifxPanController> PanControllerFound;
-
-        public int TimeoutMilliseconds
-        {
-            get { return timeoutMilliseconds; }
-            set { timeoutMilliseconds = value; }
-        }
 
         private LifxCommunicator()
         {
@@ -97,9 +93,6 @@ namespace LifxLib
         {
             LifxGetPanGatewayCommand getPanGatewayCommand = new LifxGetPanGatewayCommand();
             foundPanControllers.Clear();
-            timeoutMilliseconds = 1500;
-
-            int savedTimeout = timeoutMilliseconds;
 
             try
             {
@@ -109,10 +102,6 @@ namespace LifxLib
             {
                 //In case of any other exception, re-throw
                 throw e;
-            }
-            finally
-            {
-                timeoutMilliseconds = savedTimeout;
             }
         }
 
@@ -137,6 +126,11 @@ namespace LifxLib
             if (!IsInitialized)
                 throw new InvalidOperationException("The communicator needs to be initialized before sending a command.");
 
+            while ((DateTime.Now - lastPacketSentTime).TotalMilliseconds < MIN_PACKET_BUFFER_TIME)
+            {
+                await Task.Delay(20);
+            }
+
             LifxDataPacket packet = new LifxDataPacket(command);
             packet.TargetMac = LifxHelper.StringToByteArray(bulbMacAddress);
             packet.PanControllerMac = LifxHelper.StringToByteArray(panControllerMacAddress);
@@ -149,8 +143,9 @@ namespace LifxLib
                     await writer.StoreAsync();
                 }
             }
-        }
 
+            lastPacketSentTime = DateTime.Now;
+        }
 
         private void AddDiscoveredPanHandler(LifxPanController foundPanHandler)
         {
